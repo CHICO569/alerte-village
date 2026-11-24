@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express"), twilio = require("twilio"), fs = require("fs"), path = require("path");
-const { TWILIO_ACCOUNT_SID: SID, TWILIO_AUTH_TOKEN: TOK, TWILIO_NUMBER, MY_NUMBER, BASE_URL,
+const { TWILIO_ACCOUNT_SID: SID, TWILIO_AUTH_TOKEN: TOK, TWILIO_NUMBER, MY_NUMBER,
+        BASE_URL = "https://alerte-village.onrender.com",
         DASH_USER = "mairie", DASH_PASS = "changeme", PORT = 3000 } = process.env;
 const VR = twilio.twiml.VoiceResponse;
 const twilioClient = (SID && TOK) ? twilio(SID, TOK) : null;
