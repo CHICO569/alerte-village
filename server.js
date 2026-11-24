@@ -370,8 +370,20 @@ app.post("/api/reports/simulate", (req, res) => {
 });
 
 app.post("/api/call", async (req, res) => {
+  const missing = [
+    ["TWILIO_ACCOUNT_SID", SID],
+    ["TWILIO_AUTH_TOKEN", TOK],
+    ["TWILIO_NUMBER", TWILIO_NUMBER],
+    ["MY_NUMBER", MY_NUMBER]
+  ].filter(([, value]) => !value || !value.trim()).map(([name]) => name);
+  if (missing.length) {
+    return res.status(503).json({
+      erreur: `Configuration d'appel incomplète sur le serveur : ${missing.join(", ")}.`
+    });
+  }
+
   try {
-    await twilio(SID, TOK).calls.create({ to: MY_NUMBER, from: TWILIO_NUMBER, url: BASE_URL + "/voice" });
+    await twilioClient.calls.create({ to: MY_NUMBER, from: TWILIO_NUMBER, url: BASE_URL + "/voice" });
     res.json({ ok: true });
   } catch (e) {
     res.status(500).json({ erreur: e.message });

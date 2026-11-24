@@ -1816,7 +1816,7 @@
       try {
         const res = await fetch('/api/call', { method: 'POST' });
         const d = await res.json();
-        if (d.ok) {
+        if (res.ok && d.ok) {
           msg.textContent = "📲 Ligne en sonnerie !";
         } else {
           msg.textContent = "Erreur : " + d.erreur;
@@ -1834,17 +1834,27 @@
       const randType = types[Math.floor(Math.random() * types.length)];
       const randVillage = villages[Math.floor(Math.random() * villages.length)];
       
-      await fetch('/api/reports/simulate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: randType,
-          village: randVillage,
-          canal: "Appel",
-          from: "+221 77 *** ** 79"
-        })
-      });
-      loadData();
+      const msg = document.getElementById('callStatusMessage');
+      msg.textContent = "⏳ Ajout de l'alerte de démonstration...";
+      try {
+        const res = await fetch('/api/reports/simulate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: randType,
+            village: randVillage,
+            canal: "Appel",
+            from: "+221 77 *** ** 79"
+          })
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.erreur || `Erreur HTTP ${res.status}`);
+        await loadData();
+        msg.textContent = "Alerte de démonstration ajoutée (aucun appel téléphonique lancé).";
+      } catch (e) {
+        msg.textContent = "Erreur simulation : " + e.message;
+      }
+      setTimeout(() => { msg.textContent = ""; }, 5000);
     });
 
     // 4. ASSISTANT DU MAIRE (RÈGLE STRICTE : AUCUN CHIFFRE INVENTÉ)
