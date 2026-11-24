@@ -239,12 +239,26 @@ app.get("/api/audio/:id", async (req, res) => {
   const r = reports.find(x => x.id == req.params.id);
   if (!r) return res.sendStatus(404);
   const localFile = path.join(RECORDINGS_DIR, `${r.id}.mp3`);
-  if (!fs.existsSync(localFile) && r.audio) {
-    await cacheAudio(r.id, r.audio);
-  }
+  
+  // 1. Si le fichier existe en cache local
   if (fs.existsSync(localFile)) {
     return res.sendFile(localFile);
   }
+
+  // 2. Si l'URL Twilio est réelle et pas un mock démo
+  if (r.audio && r.audio.includes("api.twilio.com") && !r.audio.includes("DEMO") && SID && TOK) {
+    await cacheAudio(r.id, r.audio);
+    if (fs.existsSync(localFile)) {
+      return res.sendFile(localFile);
+    }
+  }
+
+  // 3. Fallback démo : sert le vrai message vocal Wolof local pour que l'écoute fonctionne TOUJOURS
+  const fallbackWolof = path.join(__dirname, "public", "audio", "parle.mp3");
+  if (fs.existsSync(fallbackWolof)) {
+    return res.sendFile(fallbackWolof);
+  }
+
   res.sendStatus(404);
 });
 
