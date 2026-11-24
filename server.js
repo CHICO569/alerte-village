@@ -250,19 +250,37 @@ app.get("/api/audio/:id", async (req, res) => {
 
 /* ---------- Tableau de bord (protégé par mot de passe) ---------- */
 app.use((req, res, next) => {
-  // Accès direct simplifié par URL (ex: ?pass=admin)
-  if (req.query.pass === "admin" || req.query.pass === "mairie" || req.query.pass === "mairie2026") {
+  const cookies = req.headers.cookie || "";
+  const hasAuthCookie = cookies.includes("mairie_auth=1");
+
+  // 1. Accès direct simplifié par URL (ex: ?pass=admin) -> pose un cookie durable
+  const queryPass = (req.query.pass || "").toString().trim().toLowerCase();
+  if (["admin", "mairie", "mairie2026", "ndiedieng"].includes(queryPass)) {
+    res.setHeader("Set-Cookie", "mairie_auth=1; Path=/; Max-Age=2592000; SameSite=Lax");
     return next();
   }
 
-  const authHeader = req.headers.authorization || "";
-  const [u, p] = Buffer.from(authHeader.split(" ")[1] || "", "base64").toString().split(":");
-
-  const allowedUsers = [process.env.DASH_USER, "admin", "mairie"].filter(Boolean);
-  const allowedPasses = [process.env.DASH_PASS, "admin", "Ndiedieng2026!", "mairie2026", "changeme"].filter(Boolean);
-
-  if (allowedUsers.includes(u) && allowedPasses.includes(p)) {
+  // 2. Si le cookie de session est déjà présent
+  if (hasAuthCookie) {
     return next();
+  }
+
+  // 3. Authentification HTTP Basic standard (tolère les majuscules automatiques du clavier smartphone)
+  const authHeader = req.headers.authorization || "";
+  if (authHeader) {
+    const raw = Buffer.from(authHeader.split(" ")[1] || "", "base64").toString();
+    const [rawU, rawP] = raw.split(":");
+    const u = (rawU || "").trim().toLowerCase();
+    const p = (rawP || "").trim();
+    const pLower = p.toLowerCase();
+
+    const allowedUsers = ["admin", "mairie", (process.env.DASH_USER || "").toLowerCase()].filter(Boolean);
+    const allowedPasses = ["admin", "mairie2026", "changeme", "ndiedieng2026!", (process.env.DASH_PASS || "").toLowerCase()].filter(Boolean);
+
+    if (allowedUsers.includes(u) && (allowedPasses.includes(pLower) || allowedPasses.includes(p))) {
+      res.setHeader("Set-Cookie", "mairie_auth=1; Path=/; Max-Age=2592000; SameSite=Lax");
+      return next();
+    }
   }
 
   res.set("WWW-Authenticate", 'Basic realm="Mairie de Ndiedieng"');
