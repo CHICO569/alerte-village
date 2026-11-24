@@ -1,0 +1,177 @@
+[
+  {
+    "id": 7,
+    "t": 1795491366940,
+    "st": "recu",
+    "audio": "https://api.twilio.com/2010-04-01/Accounts/AC_DEMO_00000000000000000000000000/Recordings/RE036ac5ba7864fe7012ef1860c1c64e9f",
+    "details": {},
+    "type": 1,
+    "village": "Ndiédieng Centre",
+    "canal": "Appel",
+    "from": "+15754489539",
+    "ai": {
+      "urgency": "Basse",
+      "urgencyLevel": "normal",
+      "resume": "Naissance survenue à Ndiédieng Centre : pré-déclaration prête pour instruction et versement au logiciel LGEC.",
+      "missing": [
+        "Prénom du nouveau-né",
+        "Nom complet de la mère",
+        "Lieu précis de naissance"
+      ],
+      "validatedByHuman": false,
+      "proposedAt": 1795491366940
+    }
+  },
+  {
+    "id": 6,
+    "t": 1795491126209,
+    "st": "recu",
+    "audio": "https://api.twilio.com/2010-04-01/Accounts/AC_DEMO_00000000000000000000000000/Recordings/REe32009ac4f95a94f521febdd67708632",
+    "details": {},
+    "type": 1,
+    "village": "Médina Ndiédieng",
+    "canal": "Appel",
+    "from": "+15754489539",
+    "ai": {
+      "urgency": "Basse",
+      "urgencyLevel": "normal",
+      "resume": "Naissance survenue à Médina Ndiédieng : pré-déclaration prête pour instruction et versement au logiciel LGEC.",
+      "missing": [
+        "Prénom du nouveau-né",
+        "Nom complet de la mère",
+        "Lieu précis de naissance"
+      ],
+      "validatedByHuman": false,
+      "proposedAt": 1795491126209
+    }
+  },
+  {
+    "id": 5,
+    "t": 1795488005498,
+    "st": "cours",
+    "audio": null,
+    "details": {
+      "nom": "",
+      "notes": ""
+    },
+    "type": 3,
+    "village": "Keur Mboucki",
+    "canal": "Appel",
+    "from": "+221 77 *** ** 79",
+    "texte": "",
+    "ai": {
+      "urgency": "Haute",
+      "urgencyLevel": "urgent",
+      "resume": "Panne de forage à Keur Mboucki : risque d'arrêt immédiat de l'eau potable pour les concessions villageoises.",
+      "missing": [
+        "Type de pompe",
+        "Nature de la panne constatée"
+      ],
+      "validatedByHuman": true,
+      "proposedAt": 1795489829606,
+      "validationDate": 1795490126835
+    },
+    "rp": 2116327
+  },
+  {
+    "id": 4,
+    "t": 1795488004245,
+    "st": "cours",
+    "audio": null,
+    "details": {},
+    "type": 4,
+    "village": "Médina Ndiédieng",
+    "canal": "Appel",
+    "from": "+221 77 *** ** 79",
+    "texte": "",
+    "ai": {
+      "urgency": "Moyenne",
+      "urgencyLevel": "medium",
+      "resume": "Éclairage public défaillant à Médina Ndiédieng : impacterait la visibilité nocturne sur la voie principale.",
+      "missing": [
+        "Quartier ou secteur précis",
+        "Nombre de lampadaires éteints"
+      ],
+      "validatedByHuman": true,
+      "proposedAt": 1795489829606,
+      "validationDate": 1795490140920
+    },
+    "rp": 2140164
+  },
+  {
+    "id": 3,
+    "t": 1795488002745,
+    "st": "recu",
+    "audio": null,
+    "details": {
+      "nom": "MAKHTAR",
+      "extra1": "NDIIAYE",
+      "extra2": "SIDI",
+      "notes": ""
+    },
+    "type": 1,
+    "village": "Keur Baka",
+    "canal": "Appel",
+    "from": "+221 77 *** ** 79",
+    "texte": "",
+    "ai": {
+      "urgency": "Basse",
+      "urgencyLevel": "normal",
+      "resume": "Naissance survenue à Keur Baka : pré-déclaration prête pour instruction et versement au logiciel LGEC.",
+      "missing": [
+        "Prénom du nouveau-né",
+        "Nom complet de la mère",
+        "Lieu précis de naissance"
+      ],
+      "validatedByHuman": false,
+      "proposedAt": 1795489829606
+    }
+  },
+  {
+    "id": 2,
+    "t": 1795486234801,
+    "st": "cours",
+    "audio": "https://api.twilio.com/2010-04-01/Accounts/AC_DEMO_00000000000000000000000000/Recordings/REa7a3d2df5dede6e41f7d7822502c32f5",
+    "type": 1,
+    "village": "Ndiédieng Centre",
+    "canal": "Appel",
+    "from": "+221 77 *** ** 79",
+    "rp": 81271,
+    "ai": {
+      "urgency": "Basse",
+      "urgencyLevel": "normal",
+      "resume": "Naissance survenue à Ndiédieng Centre : pré-déclaration prête pour instruction et versement au logiciel LGEC.",
+      "missing": [
+        "Prénom du nouveau-né",
+        "Nom complet de la mère",
+        "Lieu précis de naissance"
+      ],
+      "validatedByHuman": false,
+      "proposedAt": 1795489829606
+    },
+    "texte": "NECESSAINE MORE TALLA MERE NDEY  PERE ASTOU"
+  },
+  {
+    "id": 1,
+    "t": 1795485963463,
+    "st": "resolu",
+    "audio": "https://api.twilio.com/2010-04-01/Accounts/AC_DEMO_00000000000000000000000000/Recordings/RE41a712ad1bd1bc1c907e5852d1a199cf",
+    "type": 1,
+    "village": "Ndiébel",
+    "canal": "Appel",
+    "from": "+221 77 *** ** 79",
+    "rp": 741921,
+    "ai": {
+      "urgency": "Basse",
+      "urgencyLevel": "normal",
+      "resume": "Naissance survenue à Ndiébel : pré-déclaration prête pour instruction et versement au logiciel LGEC.",
+      "missing": [
+        "Prénom du nouveau-né",
+        "Nom complet de la mère",
+        "Lieu précis de naissance"
+      ],
+      "validatedByHuman": false,
+      "proposedAt": 1795489829606
+    }
+  }
+]

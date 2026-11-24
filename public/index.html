@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Alerte Village · Ndiédieng</title>
+  
+  <!-- Polices Google -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    :root {
+      --senegal-green: #00853f;
+      --senegal-yellow: #fdef42;
+      --senegal-red: #e31b23;
+      --gov-primary: #064e3b;
+      --gov-dark: #022c22;
+      --gov-accent: #0f766e;
+      --surface: #ffffff;
+      --bg: #f8fafc;
+      --border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --card-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER INSTITUTIONNEL AVEC LE VRAI NOM ET COMMUNE DE NDIÉDIENG */
+    header {
+      background: linear-gradient(135deg, #022c22 0%, #064e3b 50%, #0f766e 100%);
+      color: white;
+      padding: 16px 28px;
+      border-bottom: 3px solid #eab308;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .header-content {
+      max-width: 1480px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .brand-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    /* VRAI LOGO VECTORIEL TEMPORAIRE "ALERTE VILLAGE" */
+    .app-logo {
+      width: 52px;
+      height: 52px;
+      background: #022c22;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      border: 2px solid #eab308;
+      flex-shrink: 0;
+    }
+    .brand-headings {
+      display: flex;
+      flex-direction: column;
+    }
+    .institution-tag {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #fde047;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .app-title-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+    .app-title {
+      font-family: 'Cinzel', serif;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+    .app-version-tag {
+      background: rgba(234, 179, 8, 0.2);
+      border: 1px solid #eab308;
+      color: #fef08a;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 12px;
+      letter-spacing: 0.04em;
+    }
+    .brand-headings p {
+      font-size: 12px;
+      color: #a7f3d0;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      margin-top: 2px;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* BOUTONS */
+    .btn {
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+    .btn-ai {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .btn-ai:hover { transform: translateY(-1px); }
+    .btn-gold {
+      background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%);
+      color: #022c22;
+      box-shadow: 0 2px 8px rgba(234, 179, 8, 0.35);
+    }
+    .btn-gold:hover { transform: translateY(-1px); }
+    .btn-dark-outline {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: white;
+    }
+    .btn-dark-outline:hover { background: rgba(255, 255, 255, 0.15); }
+    .btn-primary { background: #0f766e; color: white; }
+    .btn-primary:hover { background: #115e59; }
+    .btn-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+    .btn-success:hover { background: #bbf7d0; }
+    .btn-sm { padding: 5px 10px; font-size: 11px; border-radius: 6px; }
+
+    /* STATS KPI */
+    .stats-grid {
+      max-width: 1480px;
+      margin: 16px auto 0 auto;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      width: 100%;
+    }
+    .kpi-card {
+      background: white;
+      border-radius: 12px;
+      padding: 14px 18px;
+      border: 1px solid var(--border);
+      box-shadow: var(--card-shadow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+    }
+    .kpi-red::before { background: #dc2626; }
+    .kpi-blue::before { background: #2563eb; }
+    .kpi-slate::before { background: #475569; }
+    .kpi-orange::before { background: #ea580c; }
+    .kpi-yellow::before { background: #d97706; }
+
+    .kpi-info h4 {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .kpi-num {
+      font-size: 26px;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-top: 4px;
+    }
+    .kpi-icon-wrap {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .kpi-icon-wrap svg { width: 20px; height: 20px; }
+
+    /* LAYOUT PRINCIPAL */
+    .main-grid {
+      max-width: 1480px;
+      margin: 16px auto;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: 1fr 460px;
+      gap: 20px;
+      width: 100%;
+      flex: 1;
+    }
+    @media (max-width: 1024px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+
+    /* PANNEAU CARTE */
+    .map-box {
+      background: white;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 560px;
+    }
+    .box-header {
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: #fafaf9;
+    }
+    .box-title {
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-main);
+    }
+    .box-title svg { width: 16px; height: 16px; color: #0f766e; }
+    #map {
+      width: 100%;
+      flex: 1;
+      min-height: 480px;
+      z-index: 10;
+    }
+
+    /* ÉTIQUETTE DE VILLAGE PERMANENTE SUR LA CARTE */
+    .village-map-label {
+      background: #064e3b !important;
+      color: #ffffff !important;
+      border: 1px solid #fde047 !important;
+      border-radius: 6px !important;
+      padding: 3px 8px !important;
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.03em !important;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3) !important;
+      white-space: nowrap !important;
+    }
+    .village-map-label::before { border-top-color: #064e3b !important; }
+    .village-map-label.has-alert {
+      background: #dc2626 !important;
+      border-color: #ffffff !important;
+      color: #ffffff !important;
+    }
+    .village-map-label.has-alert::before { border-top-color: #dc2626 !important; }
+
+    /* MARQUEUR PULSANT CARTE */
+    .pulse-marker-wrapper { position: relative; }
+    .pulse-core {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #dc2626;
+      border: 3px solid white;
+      box-shadow: 0 0 10px rgba(220, 38, 38, 0.8);
+      position: absolute;
+      top: -8px;
+      left: -8px;
+      z-index: 2;
+    }
+    .pulse-wave {
+      border: 3px solid #dc2626;
+      border-radius: 50%;
+      height: 40px;
+      width: 40px;
+      position: absolute;
+      top: -20px;
+      left: -20px;
+      animation: pulse-ring 1.8s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+      opacity: 0;
+      z-index: 1;
+    }
+    .normal-core {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #00853f;
+      border: 2px solid white;
+      box-shadow: 0 0 5px rgba(0, 133, 63, 0.6);
+      position: absolute;
+      top: -6px;
+      left: -6px;
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.3); opacity: 0.9; }
+      80% { transform: scale(1.3); opacity: 0; }
+      100% { transform: scale(1.4); opacity: 0; }
+    }
+
+    /* PANNEAU FLUX SIGNALEMENTS */
+    .feed-box {
+      background: white;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      height: 740px;
+    }
+    .filter-tabs {
+      padding: 10px 14px;
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--border);
+      background: white;
+    }
+    .tab-btn {
+      padding: 6px 11px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      color: var(--text-muted);
+      cursor: pointer;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s;
+    }
+    .tab-btn svg { width: 13px; height: 13px; }
+    .tab-btn.active {
+      background: #064e3b;
+      color: white;
+      border-color: #064e3b;
+    }
+    .reports-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* CARTE DE SIGNALEMENT AVEC CLASSIFICATION IA */
+    .report-item {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      transition: all 0.2s ease;
+      position: relative;
+      border-left: 6px solid #94a3b8;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+    .report-item:hover {
+      box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+      transform: translateY(-1px);
+    }
+    .item-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .type-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .type-badge svg { width: 13px; height: 13px; }
+    .type-1 { background: #dbeafe; color: #1d4ed8; }
+    .type-2 { background: #f1f5f9; color: #334155; }
+    .type-3 { background: #fee2e2; color: #b91c1c; }
+    .type-4 { background: #fef3c7; color: #b45309; }
+
+    /* BADGE D'URGENCE CALCULÉ PAR L'IA */
+    .ai-urgency-badge {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.04em;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .urgency-urgent { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+    .urgency-high { background: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; }
+    .urgency-medium { background: #fef9c3; color: #a16207; border: 1px solid #fef08a; }
+    .urgency-normal { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+
+    .item-location {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .item-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin: 4px 0 8px 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* ENCADRÉ JUSTIFICATION IA AVEC BOUTONS VALIDER / CORRIGER */
+    .ai-insight-box {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin: 8px 0;
+      font-size: 11px;
+      line-height: 1.4;
+      color: #334155;
+    }
+    .ai-insight-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .ai-insight-header {
+      font-weight: 700;
+      color: #4f46e5;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .ai-action-pills {
+      display: flex;
+      gap: 5px;
+    }
+    .btn-ai-val {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      border: 1px solid #bbf7d0;
+      background: #dcfce7;
+      color: #166534;
+      cursor: pointer;
+    }
+    .btn-ai-val:hover { background: #bbf7d0; }
+    .btn-ai-corr {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      border: 1px solid #cbd5e1;
+      background: white;
+      color: #475569;
+      cursor: pointer;
+    }
+    .btn-ai-corr:hover { background: #f1f5f9; }
+
+    /* LECTEUR AUDIO */
+    .audio-player-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 8px 12px;
+      margin: 8px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .audio-header-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #0f766e;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .audio-player-box audio { width: 100%; height: 32px; outline: none; }
+
+    .item-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* TIROIR D'ASSISTANT DU MAIRE */
+    .ai-drawer {
+      display: none;
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: 440px;
+      max-width: 90vw;
+      background: white;
+      box-shadow: -8px 0 30px rgba(0,0,0,0.15);
+      z-index: 2500;
+      flex-direction: column;
+    }
+    .ai-drawer.open { display: flex; }
+    .ai-drawer-header {
+      padding: 16px 20px;
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .ai-chat-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: #f8fafc;
+    }
+    .chat-bubble {
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+      max-width: 90%;
+      white-space: pre-line;
+    }
+    .chat-user {
+      align-self: flex-end;
+      background: #4f46e5;
+      color: white;
+      border-bottom-right-radius: 2px;
+    }
+    .chat-bot {
+      align-self: flex-start;
+      background: white;
+      color: #0f172a;
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 2px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+    .source-tag {
+      display: inline-block;
+      margin-top: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #0f766e;
+      background: #ccfbf1;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+    .quick-prompts {
+      padding: 10px 16px;
+      background: white;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .quick-chip {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 14px;
+      background: #f1f5f9;
+      color: #475569;
+      cursor: pointer;
+      border: 1px solid #e2e8f0;
+      transition: all 0.15s;
+    }
+    .quick-chip:hover { background: #ede9fe; color: #6d28d9; border-color: #ddd6fe; }
+    .ai-input-bar {
+      padding: 12px 16px;
+      background: white;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+    }
+    .ai-input-bar input {
+      flex: 1;
+      padding: 9px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+    }
+
+    /* MODAL PRÉ-DÉCLARATION D'ÉTAT CIVIL (LGEC) */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(5px);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-window {
+      background: white;
+      border-radius: 16px;
+      max-width: 680px;
+      width: 100%;
+      max-height: 92vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-header-bar {
+      padding: 16px 22px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8fafc;
+    }
+    .modal-content-area {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* FICHE DE PRÉ-DÉCLARATION ÉTAT CIVIL */
+    .predeclaration-sheet {
+      background: #ffffff;
+      border: 2px solid #0f766e;
+      padding: 26px 22px;
+      border-radius: 8px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+      position: relative;
+    }
+    .sheet-header {
+      text-align: center;
+      border-bottom: 2px solid #0f766e;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+    .sheet-header h2 {
+      font-family: 'Cinzel', serif;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: #064e3b;
+    }
+    .sheet-header p { font-size: 11px; color: #475569; margin-top: 2px; }
+    .sheet-title-badge {
+      display: inline-block;
+      background: #0f766e;
+      color: white;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      margin: 10px 0;
+      text-transform: uppercase;
+    }
+    .sheet-legal-warning {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 11px;
+      color: #92400e;
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+    .sheet-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      font-size: 13px;
+      margin: 14px 0;
+    }
+    .sheet-grid b { color: #334155; }
+    .missing-info-box {
+      background: #fee2e2;
+      border-left: 4px solid #dc2626;
+      padding: 10px 14px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #991b1b;
+      margin: 12px 0;
+    }
+    .missing-info-box ul { margin: 6px 0 0 18px; }
+
+    @media print {
+      body * { visibility: hidden; }
+      #printableSheet, #printableSheet * { visibility: visible; }
+      #printableSheet { position: absolute; left: 0; top: 0; width: 100%; border: none; }
+      .btn, .modal-header-bar button, .sheet-legal-warning { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER INSTITUTIONNEL AVEC LE VRAI NOM : COMMUNE DE NDIÉDIENG -->
+  <header>
+    <div class="header-content">
+      <div class="brand-container">
+        <!-- Logo officiel temporaire Alerte Village SVG -->
+        <div class="app-logo" title="Alerte Village · Ndiédieng">
+          <svg viewBox="0 0 100 100" width="44" height="44">
+            <path d="M50 8 L85 24 V52 C85 74 50 92 50 92 C50 92 15 74 15 52 V24 Z" fill="#064e3b" stroke="#eab308" stroke-width="3"/>
+            <path d="M35 34 A22 22 0 0 1 65 34" fill="none" stroke="#fde047" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M27 26 A34 34 0 0 1 73 26" fill="none" stroke="#a7f3d0" stroke-width="2" stroke-linecap="round"/>
+            <polygon points="50,38 30,56 70,56" fill="#eab308"/>
+            <rect x="36" y="56" width="28" height="20" fill="#f8fafc"/>
+            <rect x="44" y="62" width="12" height="14" fill="#022c22"/>
+          </svg>
+        </div>
+        <div class="brand-headings">
+          <div class="institution-tag">
+            <span>RÉPUBLIQUE DU SÉNÉGAL</span>
+            <span>·</span>
+            <span>RÉGION DE KAOLACK</span>
+          </div>
+          <div class="app-title-row">
+            <h1 class="app-title">ALERTE VILLAGE</h1>
+            <span class="app-version-tag">NDIÉDIENG</span>
+          </div>
+          <p>Conçu pour la Commune de Ndiédieng · Assistance Municipale & Pré-déclaration LGEC</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Bouton Assistant IA du Maire -->
+        <button class="btn btn-ai" id="btnOpenAI" title="Poser une question à l'IA sur l'état des signalements">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10a9.96 9.96 0 0 1-5.55-1.67L2 22l1.67-4.45A9.96 9.96 0 0 1 2 12c0-5.52 4.48-10 10-10z"></path></svg>
+          <span>Assistant du Maire</span>
+        </button>
+
+        <!-- Bouton Test Appel -->
+        <button class="btn btn-gold" id="btnCallTest" title="Déclencher un appel vocal vers le numéro de test">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+          <span>M'appeler pour tester</span>
+        </button>
+
+        <button class="btn btn-dark-outline" id="btnSimulate">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          <span>Simuler une alerte</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- BARRE DE STATISTIQUES (KPIs) -->
+  <div class="stats-grid">
+    <div class="kpi-card kpi-red">
+      <div class="kpi-info">
+        <h4>À traiter d'urgence</h4>
+        <div class="kpi-num" id="kpiUrgent" style="color: #dc2626">0</div>
+      </div>
+      <div class="kpi-icon-wrap" style="background: #fee2e2; color: #dc2626">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-blue">
+      <div class="kpi-info">
+        <h4>Naissances déclarées</h4>
+        <div class="kpi-num" id="kpiNaissances" style="color: #2563eb">0</div>
+      </div>
+      <div class="kpi-icon-wrap" style="background: #dbeafe; color: #2563eb">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"></circle><path d="M6 20v-2a6 6 0 0 1 12 0v2"></path><path d="M12 14v4"></path><path d="M10 16h4"></path></svg>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-slate">
+      <div class="kpi-info">
+        <h4>Décès enregistrés</h4>
+        <div class="kpi-num" id="kpiDeces" style="color: #475569">0</div>
+      </div>
+      <div class="kpi-icon-wrap" style="background: #f1f5f9; color: #475569">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-orange">
+      <div class="kpi-info">
+        <h4>Pannes de Forage</h4>
+        <div class="kpi-num" id="kpiForage" style="color: #ea580c">0</div>
+      </div>
+      <div class="kpi-icon-wrap" style="background: #ffedd5; color: #ea580c">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-yellow">
+      <div class="kpi-info">
+        <h4>Pannes d'Éclairage</h4>
+        <div class="kpi-num" id="kpiEclairage" style="color: #ca8a04">0</div>
+      </div>
+      <div class="kpi-icon-wrap" style="background: #fef9c3; color: #ca8a04">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5.76.76 1.23 1.52 1.41 2.5"></path></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ZONE PRINCIPALE -->
+  <div class="main-grid">
+
+    <!-- COLONNE GAUCHE : CARTE CENTRÉE SUR NDIÉDIENG (SÉNÉGAL) -->
+    <div class="map-box">
+      <div class="box-header">
+        <div class="box-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>
+          <span>Cartographie des Villages — Commune de Ndiédieng (Kaolack)</span>
+        </div>
+        <div style="font-size: 11px; font-weight: 600; display:flex; align-items:center; gap:12px">
+          <span style="color:#64748b; font-style:italic">58 villages prévus · Données de démo</span>
+          <span style="display:flex; align-items:center; gap:5px; color:#dc2626">
+            <span style="width:8px; height:8px; background:#dc2626; border-radius:50%; display:inline-block"></span>
+            Alerte
+          </span>
+          <span style="display:flex; align-items:center; gap:5px; color:#00853f">
+            <span style="width:8px; height:8px; background:#00853f; border-radius:50%; display:inline-block"></span>
+            Normal
+          </span>
+        </div>
+      </div>
+      <div id="map"></div>
+    </div>
+
+    <!-- COLONNE DROITE : FEED DES ALERTES AVEC CLASSIFICATION IA -->
+    <div class="feed-box">
+      <div class="box-header">
+        <div class="box-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          <span>Dossiers d'alertes & Pré-déclarations</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px">
+          <button class="btn btn-sm" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; padding:3px 8px; font-size:11px" onclick="exportCSV()" title="Télécharger le registre officiel pour le Maire ou le logiciel LGEC">
+            📥 Exporter CSV / Excel
+          </button>
+          <span id="callStatusMessage" style="font-size: 12px; font-weight: 700; color: #0f766e"></span>
+        </div>
+      </div>
+
+      <!-- Onglets Filtres -->
+      <div class="filter-tabs">
+        <button class="tab-btn active" data-filter="all">Tous</button>
+        <button class="tab-btn" data-filter="1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/></svg>
+          Naissances
+        </button>
+        <button class="tab-btn" data-filter="2">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+          Décès
+        </button>
+        <button class="tab-btn" data-filter="3">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+          Forages
+        </button>
+        <button class="tab-btn" data-filter="4">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+          Éclairage
+        </button>
+        <button class="tab-btn" data-filter="pending">En attente</button>
+        
+        <select id="villageSelectFilter" onchange="filterByVillage(this.value)" style="margin-left:auto; padding:3px 8px; border-radius:14px; font-size:11px; font-weight:700; border:1px solid #cbd5e1; background:#f8fafc; color:#334155; font-family:inherit; cursor:pointer">
+          <option value="all">📍 Tous les villages</option>
+        </select>
+      </div>
+
+      <!-- Liste des cartes -->
+      <div class="reports-scroll" id="reportsFeed">
+        <!-- Rempli en temps réel -->
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TIROIR ASSISTANT DU MAIRE (RÈGLE STRICTE : AUCUN CHIFFRE INVENTÉ) -->
+  <div class="ai-drawer" id="aiDrawer">
+    <div class="ai-drawer-header">
+      <div style="display:flex; align-items:center; gap:10px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="22" height="22"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10a9.96 9.96 0 0 1-5.55-1.67L2 22l1.67-4.45A9.96 9.96 0 0 1 2 12c0-5.52 4.48-10 10-10z"></path></svg>
+        <div>
+          <h3 style="font-size:15px; font-weight:800">Assistant du Maire</h3>
+          <p style="font-size:11px; opacity:0.85">Aide à la décision · Fiches réelles de Ndiédieng</p>
+        </div>
+      </div>
+      <button class="btn btn-sm" style="background:rgba(255,255,255,0.2); color:white" onclick="toggleAIDrawer(false)">✕</button>
+    </div>
+
+    <div class="ai-chat-body" id="aiChatBody">
+      <div class="chat-bubble chat-bot">
+        Bonjour Monsieur le Maire. Je réponds à vos questions en analysant les fiches réelles de la Commune de Ndiédieng.
+        <br><br>
+        <i>Règle de fiabilité : si une information n'est pas dans les fiches, je ne l'invente pas.</i>
+      </div>
+    </div>
+
+    <div class="quick-prompts">
+      <div class="quick-chip" onclick="askQuickPrompt('Quels villages n\'ont plus d\'eau ?')">💧 Quels villages n'ont plus d'eau ?</div>
+      <div class="quick-chip" onclick="askQuickPrompt('Fais-moi un résumé pour le conseil municipal')">📑 Synthèse conseil municipal</div>
+      <div class="quick-chip" onclick="askQuickPrompt('Quels sont les villages les plus touchés ?')">📍 Villages prioritaires</div>
+      <div class="quick-chip" onclick="askQuickPrompt('Où en sont les déclarations de naissance ?')">👶 Naissances en attente</div>
+    </div>
+
+    <div class="ai-input-bar">
+      <input type="text" id="aiInput" placeholder="Posez une question en français..." onkeydown="if(event.key==='Enter') sendAIMessage()">
+      <button class="btn btn-primary btn-sm" onclick="sendAIMessage()">Envoyer</button>
+    </div>
+  </div>
+
+  <!-- MODAL PRÉ-DÉCLARATION D'ÉTAT CIVIL (LGEC) - AUCUN MOT CERTIFICAT -->
+  <div class="modal-overlay" id="detailModal">
+    <div class="modal-window">
+      <div class="modal-header-bar">
+        <div>
+          <h3 style="font-size: 15px; font-weight: 800; color: #064e3b">Pré-déclaration, à valider par l'officier d'état civil</h3>
+          <p style="font-size: 11px; color: #64748b">Préparée par l'IA d'après le signalement villageois · Logiciel LGEC</p>
+        </div>
+        <button class="btn btn-sm" style="background:#e2e8f0; color:#334155" onclick="closeModal()">✕ Fermer</button>
+      </div>
+      <div class="modal-content-area" id="modalBody">
+        <!-- Rempli dynamiquement -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CHARTE IA & RÈGLES DE SÉCURITÉ (POUR LE JURY) -->
+  <div class="modal-overlay" id="charteModal">
+    <div class="modal-window" style="max-width: 650px;">
+      <div class="modal-header-bar" style="background: #022c22; color: white;">
+        <div>
+          <h3 style="font-size: 15px; font-weight: 800; color: #fef08a">Cadre d'Usage de l'IA Municipale & Sécurité</h3>
+          <p style="font-size: 11px; opacity: 0.85">Garanties déontologiques et institutionnelles (Commune de Ndiédieng)</p>
+        </div>
+        <button class="btn btn-sm" style="background: rgba(255,255,255,0.2); color: white" onclick="closeCharteModal()">✕ Fermer</button>
+      </div>
+      <div class="modal-content-area" style="font-size: 13px; line-height: 1.6; color: #1e293b;">
+        <div style="background: #ecfdf5; border-left: 4px solid #10b981; padding: 12px 16px; border-radius: 4px; margin-bottom: 8px;">
+          <b style="color: #064e3b; font-size: 13px;">« L'IA fait gagner du temps à la Mairie, mais c'est toujours l'agent qui décide. »</b>
+        </div>
+
+        <h4 style="color: #064e3b; font-size: 13px; margin-top: 8px;">✅ Ce que l'IA fait (4 rôles) :</h4>
+        <ul style="margin-left: 20px;">
+          <li><b>Classer l'alerte :</b> Propose le type et le niveau d'urgence (une panne de forage prioritaire sur un éclairage).</li>
+          <li><b>Extraire les informations :</b> Repère le village, la date et le numéro du déclarant.</li>
+          <li><b>Préparer la fiche :</b> Pré-déclaration d'état civil à vérifier (compatible LGEC).</li>
+          <li><b>Répondre au Maire :</b> Assistant décisionnel (« Quels villages n'ont plus d'eau ? »).</li>
+        </ul>
+
+        <h4 style="color: #dc2626; font-size: 13px; margin-top: 10px;">🛑 Ce que l'IA ne fait PAS :</h4>
+        <ul style="margin-left: 20px;">
+          <li><b>Aucun acte ou certificat officiel :</b> Seul l'officier d'état civil dresse les actes légaux.</li>
+          <li><b>Aucune réponse autonome aux villageois :</b> Elle ne remplace pas l'autorité municipale.</li>
+          <li><b>Zéro invention :</b> Si une donnée manque, elle écrit « à compléter » plutôt que de deviner.</li>
+          <li><b>Aucune cause de décès devinée :</b> Donnée de santé confidentielle strictement protégée.</li>
+        </ul>
+
+        <h4 style="color: #4f46e5; font-size: 13px; margin-top: 10px;">🛡️ Sécurité & Résilience :</h4>
+        <ul style="margin-left: 20px;">
+          <li>Chaque décision porte la mention <b>« Proposé par l'IA »</b> avec boutons pour valider ou corriger.</li>
+          <li>Si le signalement n'est pas clair, l'alerte reste dans <i>« À traiter »</i> pour décision humaine.</li>
+          <li><b>Résilience :</b> Si pas d'IA ou pas de connexion, la Mairie reçoit les signalements bruts sans interruption.</li>
+          <li><b>Confidentialité :</b> Données hébergées à la Mairie, accès protégé par mot de passe.</li>
+        </ul>
+
+        <div style="background: #fffbeb; border: 1px solid #fde68a; padding: 10px 14px; border-radius: 6px; font-size: 12px; color: #92400e; margin-top: 10px;">
+          <b>Limites admises avec honnêteté :</b> La transcription automatique des langues locales (Wolof, Sérère, Pulaar) étant moins précise sur les noms propres, la vérification par un agent communal est obligatoire.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    const TYPE_NAMES = { 1: "Naissance", 2: "Décès", 3: "Panne de forage", 4: "Panne d’éclairage" };
+    const TYPE_COLORS = { 1: "#2563eb", 2: "#475569", 3: "#dc2626", 4: "#d97706" };
+    const STATUS_TEXT = { recu: "Reçu", cours: "En cours", resolu: "Résolu" };
+
+    let reports = [];
+    let villageCoords = {};
+    let activeFilter = "all";
+    let selectedVillage = "all";
+    let map, markers = {};
+
+    // 1. INITIALISATION DE LA CARTE : CENTRÉE SUR NDIÉDIENG (KAOLACK)
+    function initMap() {
+      // Coordonnées de Ndiédieng (Kaolack, Sénégal)
+      map = L.map('map').setView([14.0205, -16.0315], 11);
+      
+      // OpenStreetMap 100% gratuit sans clé API
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 19
+      }).addTo(map);
+    }
+
+    // 2. MISE À JOUR DES POINTS AVEC NOMS PERMANENTS
+    function updateMapMarkers() {
+      if (!map || Object.keys(villageCoords).length === 0) return;
+      const bounds = [];
+
+      Object.entries(villageCoords).forEach(([village, [lat, lng]]) => {
+        bounds.push([lat, lng]);
+        const villageReports = reports.filter(r => r.village === village && r.st !== 'resolu');
+        const hasAlert = villageReports.length > 0;
+
+        let icon;
+        if (hasAlert) {
+          icon = L.divIcon({
+            className: 'pulse-marker-wrapper',
+            html: `<div class="pulse-wave"></div><div class="pulse-core"></div>`,
+            iconSize: [20, 20],
+            iconAnchor: [0, 0]
+          });
+        } else {
+          icon = L.divIcon({
+            className: 'pulse-marker-wrapper',
+            html: `<div class="normal-core"></div>`,
+            iconSize: [14, 14],
+            iconAnchor: [0, 0]
+          });
+        }
+
+        if (markers[village]) {
+          markers[village].setIcon(icon);
+          const tooltip = markers[village].getTooltip();
+          if (tooltip) {
+            tooltip.setContent(`📍 ${village} ${hasAlert ? `(${villageReports.length})` : ''}`);
+          }
+        } else {
+          const m = L.marker([lat, lng], { icon }).addTo(map);
+          m.bindTooltip(`📍 ${village} ${hasAlert ? `(${villageReports.length})` : ''}`, {
+            permanent: true,
+            direction: 'top',
+            offset: [0, -12],
+            className: hasAlert ? 'village-map-label has-alert' : 'village-map-label'
+          });
+          markers[village] = m;
+        }
+      });
+
+      if (bounds.length > 0) map.fitBounds(bounds, { padding: [50, 50] });
+    }
+
+    function timeAgo(t) {
+      const s = Math.round((Date.now() - t) / 1000);
+      if (s < 60) return `il y a ${s} s`;
+      if (s < 3600) return `il y a ${Math.round(s/60)} min`;
+      if (s < 86400) return `il y a ${Math.round(s/3600)} h`;
+      return `il y a ${Math.round(s/86400)} j`;
+    }
+
+    async function loadData() {
+      try {
+        const [repRes, vilRes] = await Promise.all([
+          fetch('/api/reports'),
+          fetch('/api/villages')
+        ]);
+        reports = await repRes.json();
+        const vData = await vilRes.json();
+        villageCoords = vData.coords;
+
+        // Remplir le menu déroulant des villages
+        const sel = document.getElementById('villageSelectFilter');
+        if (sel && sel.options.length <= 1) {
+          Object.keys(villageCoords).forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v;
+            opt.textContent = v;
+            sel.appendChild(opt);
+          });
+        }
+
+        renderKPIs();
+        renderFeed();
+        updateMapMarkers();
+      } catch (err) {
+        console.error("Erreur de chargement:", err);
+      }
+    }
+
+    function filterByVillage(v) {
+      selectedVillage = v;
+      renderFeed();
+    }
+
+    function exportCSV() {
+      if (!reports.length) return alert("Aucun dossier à exporter.");
+      const headers = ["ID", "Date", "Heure", "Village", "Type", "Canal", "Statut", "Urgence_IA", "Resume_IA", "Texte_Message"];
+      const rows = reports.map(r => {
+        const d = new Date(r.t);
+        return [
+          r.id,
+          d.toLocaleDateString('fr-FR'),
+          d.toLocaleTimeString('fr-FR'),
+          `"${r.village}"`,
+          `"${TYPE_NAMES[r.type] || r.type}"`,
+          `"${r.canal}"`,
+          `"${STATUS_TEXT[r.st] || r.st}"`,
+          `"${(r.ai && r.ai.urgency) || 'Basse'}"`,
+          `"${((r.ai && r.ai.resume) || '').replace(/"/g, '""')}"`,
+          `"${(r.texte || '').replace(/"/g, '""')}"`
+        ];
+      });
+      const csv = "data:text/csv;charset=utf-8,\uFEFF" + [headers.join(";"), ...rows.map(e => e.join(";"))].join("\n");
+      const uri = encodeURI(csv);
+      const a = document.createElement("a");
+      a.href = uri;
+      a.download = `Alerte_Village_Ndiedieng_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    function renderKPIs() {
+      document.getElementById('kpiUrgent').textContent = reports.filter(r => r.st !== 'resolu').length;
+      document.getElementById('kpiNaissances').textContent = reports.filter(r => r.type === 1).length;
+      document.getElementById('kpiDeces').textContent = reports.filter(r => r.type === 2).length;
+      document.getElementById('kpiForage').textContent = reports.filter(r => r.type === 3).length;
+      document.getElementById('kpiEclairage').textContent = reports.filter(r => r.type === 4).length;
+    }
+
+    // 3. RENDU DU FEED AVEC BOUTONS "VALIDER" / "CORRIGER" DE L'IA
+    function renderFeed() {
+      const feed = document.getElementById('reportsFeed');
+      let filtered = reports;
+
+      if (activeFilter === 'pending') {
+        filtered = reports.filter(r => r.st !== 'resolu');
+      } else if (activeFilter !== 'all') {
+        filtered = reports.filter(r => r.type == activeFilter);
+      }
+
+      if (selectedVillage !== 'all') {
+        filtered = filtered.filter(r => r.village === selectedVillage);
+      }
+
+      if (!filtered.length) {
+        feed.innerHTML = `
+          <div style="text-align:center; padding:50px 20px; color:#94a3b8">
+            <svg style="width:40px; height:40px; margin:0 auto; display:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+            </svg>
+            <p style="margin-top:10px; font-size:13px; font-weight:600">Aucun dossier dans cette catégorie.</p>
+          </div>
+        `;
+        return;
+      }
+
+      feed.innerHTML = filtered.map(r => {
+        const typeName = TYPE_NAMES[r.type] || "Signalement";
+        const color = TYPE_COLORS[r.type] || "#94a3b8";
+        const ai = r.ai || { urgency: "Basse", urgencyLevel: "normal", resume: "Signalement en cours de qualification." };
+        const maskedFrom = r.from ? r.from.replace(/(\+\d{3})\s?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})/, "$1 $2 *** ** $5") : "Ligne locale";
+
+        return `
+          <div class="report-item" style="border-left-color: ${color}">
+            <div class="item-top">
+              <span class="type-badge type-${r.type}">
+                ${getTypeIcon(r.type)}
+                <span>${typeName}</span>
+              </span>
+              <span class="ai-urgency-badge urgency-${ai.urgencyLevel}">
+                Urgence : ${ai.urgency}
+              </span>
+            </div>
+
+            <div class="item-location">
+              📍 ${r.village}
+            </div>
+
+            <div class="item-meta">
+              <span>🕒 ${timeAgo(r.t)}</span>
+              <span>·</span>
+              <span>${r.canal === 'Appel' ? '📞 Appel Vocal' : '💬 SMS'}</span>
+              <span>·</span>
+              <span>👤 ${maskedFrom}</span>
+              <span>·</span>
+              <span style="font-weight:700; color:${r.st === 'resolu' ? '#166534' : '#b45309'}">${STATUS_TEXT[r.st] || r.st}</span>
+            </div>
+
+            <!-- ENCADRÉ AVEC LES BOUTONS VALIDER ET CORRIGER -->
+            <div class="ai-insight-box">
+              <div class="ai-insight-top">
+                <div class="ai-insight-header">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                  <span>Proposé par l'IA :</span>
+                </div>
+                <div class="ai-action-pills">
+                  ${ai.validatedByHuman ? `
+                    <span style="color:#166534; font-weight:700; font-size:10px">✅ Validé par l'agent</span>
+                  ` : `
+                    <button class="btn-ai-val" onclick="validateAI(${r.id})">Valider</button>
+                    <button class="btn-ai-corr" onclick="correctAI(${r.id})">Corriger</button>
+                  `}
+                </div>
+              </div>
+              <div>${ai.resume}</div>
+            </div>
+
+            ${r.texte ? `<div style="font-size:12px; background:#f1f5f9; padding:8px 12px; border-radius:8px; margin:8px 0; color:#334155; font-style:italic">« ${r.texte} »</div>` : ''}
+
+            <!-- LECTEUR AUDIO AVEC SAISIE WOLOF DE SECOURS -->
+            ${r.canal === 'Appel' ? `
+              <div class="audio-player-box">
+                <div class="audio-header-label">
+                  <span>🎙️ Message vocal du village (Wolof)</span>
+                  <button class="btn btn-sm" style="background:#e2e8f0; color:#334155; padding:2px 6px; font-size:10px" onclick="promptTranscript(${r.id})">✍️ Retranscrire</button>
+                </div>
+                ${r.audio ? `
+                  <audio controls preload="metadata" src="/api/audio/${r.id}"></audio>
+                ` : `<small style="color:#64748b">🎙️ Traitement audio en cours...</small>`}
+              </div>
+            ` : ''}
+
+            <div class="item-actions">
+              ${r.st === 'recu' ? `<button class="btn btn-primary btn-sm" onclick="changeStatus(${r.id}, 'cours')">Prendre en charge</button>` : ''}
+              ${r.st !== 'resolu' ? `<button class="btn btn-success btn-sm" onclick="changeStatus(${r.id}, 'resolu')">Marquer résolu</button>` : ''}
+              
+              <!-- BOUTON EXACT : PRÉPARER LA FICHE (À VALIDER) -->
+              <button class="btn btn-sm" style="background:#0f766e; color:white" onclick="openDetails(${r.id})">
+                ${(r.type === 1 || r.type === 2) ? '📋 Préparer la fiche (à valider)' : '📝 Fiche technique'}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function getTypeIcon(type) {
+      if (type === 1) return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/></svg>`;
+      if (type === 2) return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`;
+      if (type === 3) return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>`;
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>`;
+    }
+
+    async function changeStatus(id, st) {
+      await fetch(`/api/reports/${id}/status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ st })
+      });
+      loadData();
+    }
+
+    // ACTIONS VALIDER / CORRIGER PROPOSITION IA
+    async function validateAI(id) {
+      await fetch(`/api/reports/${id}/ai-validate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'validate' })
+      });
+      loadData();
+    }
+
+    async function correctAI(id) {
+      const newType = prompt("Corriger le type : 1=Naissance, 2=Décès, 3=Forage, 4=Éclairage");
+      if (!newType) return;
+      const newUrg = prompt("Corriger l'urgence : Haute, Moyenne, Basse");
+      await fetch(`/api/reports/${id}/ai-validate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'correct', correctedType: newType, correctedUrgency: newUrg })
+      });
+      loadData();
+    }
+
+    // RETRANSCRIPTION DE SECOURS DE LA VOIX WOLOF
+    async function promptTranscript(id) {
+      const txt = prompt("Saisie de secours : notez les informations entendues dans le vocal Wolof :");
+      if (txt) {
+        await fetch(`/api/reports/${id}/transcript`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ texte: txt })
+        });
+        loadData();
+      }
+    }
+
+    // ONGLETS FILTRES
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeFilter = btn.dataset.filter;
+        renderFeed();
+      });
+    });
+
+    // TEST D'APPEL
+    document.getElementById('btnCallTest').addEventListener('click', async () => {
+      const msg = document.getElementById('callStatusMessage');
+      msg.textContent = "⏳ Déclenchement de l'appel...";
+      try {
+        const res = await fetch('/api/call', { method: 'POST' });
+        const d = await res.json();
+        if (d.ok) {
+          msg.textContent = "📲 Ligne en sonnerie !";
+        } else {
+          msg.textContent = "Erreur : " + d.erreur;
+        }
+      } catch (e) {
+        msg.textContent = "Erreur de connexion";
+      }
+      setTimeout(() => { msg.textContent = ""; }, 5000);
+    });
+
+    // SIMULATION D'ALERTE POUR NDIÉDIENG
+    document.getElementById('btnSimulate').addEventListener('click', async () => {
+      const types = [1, 2, 3, 4];
+      const villages = ["Ndiédieng Centre", "Médina Ndiédieng", "Keur Mboucki", "Keur Baka", "Ndiébel", "Keur Socé"];
+      const randType = types[Math.floor(Math.random() * types.length)];
+      const randVillage = villages[Math.floor(Math.random() * villages.length)];
+      
+      await fetch('/api/reports/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: randType,
+          village: randVillage,
+          canal: "Appel",
+          from: "+221 77 *** ** 79"
+        })
+      });
+      loadData();
+    });
+
+    // 4. ASSISTANT DU MAIRE (RÈGLE STRICTE : AUCUN CHIFFRE INVENTÉ)
+    function toggleAIDrawer(open) {
+      const drawer = document.getElementById('aiDrawer');
+      if (open) drawer.classList.add('open');
+      else drawer.classList.remove('open');
+    }
+    document.getElementById('btnOpenAI').addEventListener('click', () => toggleAIDrawer(true));
+
+    async function sendAIMessage() {
+      const input = document.getElementById('aiInput');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = "";
+
+      const body = document.getElementById('aiChatBody');
+      body.innerHTML += `<div class="chat-bubble chat-user">${escapeHtml(text)}</div>`;
+      body.scrollTop = body.scrollHeight;
+
+      try {
+        const res = await fetch('/api/ai/ask', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: text })
+        });
+        const data = await res.json();
+        body.innerHTML += `
+          <div class="chat-bubble chat-bot">
+            <b>Assistant du Maire :</b>\n\n${escapeHtml(data.answer)}
+            <br><span class="source-tag">Source : ${escapeHtml(data.sourceFiche || "Fiches municipales")}</span>
+          </div>
+        `;
+      } catch (e) {
+        body.innerHTML += `<div class="chat-bubble chat-bot" style="color:#dc2626">Erreur d'analyse.</div>`;
+      }
+      body.scrollTop = body.scrollHeight;
+    }
+
+    function askQuickPrompt(promptText) {
+      document.getElementById('aiInput').value = promptText;
+      sendAIMessage();
+    }
+
+    function escapeHtml(t) {
+      return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // 5. MODAL PRÉ-DÉCLARATION D'ÉTAT CIVIL (AUCUN MOT CERTIFICAT, AUCUNE CAUSE DE DÉCÈS)
+    function openDetails(id) {
+      const r = reports.find(x => x.id === id);
+      if (!r) return;
+
+      const modal = document.getElementById('detailModal');
+      const body = document.getElementById('modalBody');
+      const d = r.details || {};
+      const ai = r.ai || {};
+      const isCivil = (r.type === 1 || r.type === 2);
+      const isBirth = (r.type === 1);
+      const maskedFrom = r.from ? r.from.replace(/(\+\d{3})\s?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})/, "$1 $2 *** ** $5") : "Ligne locale";
+
+      body.innerHTML = `
+        ${isCivil ? `
+          <!-- BANDEAU OBLIGATOIRE : PRÉ-DÉCLARATION, À VALIDER -->
+          <div class="sheet-legal-warning">
+            ⚖️ <b>Pré-déclaration, à valider par l'officier d'état civil :</b> L'IA pré-remplit les éléments déclarés depuis le village. L'officier d'état civil vérifie les pièces et dresse seul l'acte officiel au registre communal (logiciel LGEC).
+          </div>
+
+          <!-- FICHE PRÉPARATOIRE IMPRIMABLE -->
+          <div id="printableSheet" class="predeclaration-sheet">
+            <div class="sheet-header">
+              <h2>COMMUNE DE NDIÉDIENG</h2>
+              <p>Région de Kaolack · Centre Principal d'État Civil</p>
+              <div class="sheet-title-badge">
+                ${isBirth ? "Pré-Déclaration de Naissance" : "Pré-Déclaration de Décès"} · Dossier #${r.id}
+              </div>
+            </div>
+
+            <!-- ÉLÉMENTS RETROUVÉS PAR L'IA -->
+            <div class="sheet-grid">
+              <div><b>Village :</b> ${r.village}</div>
+              <div><b>Date et Heure du signalement :</b> ${new Date(r.t).toLocaleString('fr-FR')}</div>
+              <div><b>Canal d'alerte :</b> ${r.canal} (${maskedFrom})</div>
+              <div><b>Statut :</b> Pré-déclaration en cours de vérification</div>
+            </div>
+
+            <!-- CHAMPS À VALIDER PAR L'OFFICIER (PAS DE CAUSE DE DÉCÈS) -->
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px; margin:14px 0">
+              <h4 style="font-size:13px; font-weight:800; color:#064e3b; margin-bottom:10px">
+                Vérification et compléments par l'Officier d'État Civil :
+              </h4>
+
+              <div style="display:flex; flex-direction:column; gap:10px">
+                <div>
+                  <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:#64748b">${isBirth ? "Prénom & Nom du Nouveau-né" : "Prénom & Nom du Défunt"}</label>
+                  <input type="text" id="detNom" value="${d.nom || ''}" placeholder="${d.nom ? d.nom : 'à compléter'}" style="width:100%; padding:8px 12px; border-radius:6px; border:1px solid #cbd5e1; font-family:inherit; margin-top:3px">
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+                  <div>
+                    <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:#64748b">${isBirth ? "Prénom & Nom de la Mère" : "Âge approximatif"}</label>
+                    <input type="text" id="detExtra1" value="${d.extra1 || ''}" placeholder="${d.extra1 ? d.extra1 : 'à compléter'}" style="width:100%; padding:8px 12px; border-radius:6px; border:1px solid #cbd5e1; font-family:inherit; margin-top:3px">
+                  </div>
+                  <div>
+                    <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:#64748b">${isBirth ? "Prénom & Nom du Père" : "Lieu exact dans le village"}</label>
+                    <input type="text" id="detExtra2" value="${d.extra2 || ''}" placeholder="${d.extra2 ? d.extra2 : 'à compléter'}" style="width:100%; padding:8px 12px; border-radius:6px; border:1px solid #cbd5e1; font-family:inherit; margin-top:3px">
+                  </div>
+                </div>
+
+                <div>
+                  <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:#64748b">Observations de l'Officier d'État Civil</label>
+                  <textarea id="detNotes" rows="2" placeholder="Ex: Déclaration confirmée auprès du délégué de quartier..." style="width:100%; padding:8px 12px; border-radius:6px; border:1px solid #cbd5e1; font-family:inherit; margin-top:3px">${d.notes || ''}</textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- CE QUI MANQUE MARQUÉ "À COMPLÉTER" -->
+            ${(ai.missing && ai.missing.length > 0) ? `
+              <div class="missing-info-box">
+                <b>🔍 Informations à vérifier auprès du déclarant (marquées « à compléter ») :</b>
+                <ul>
+                  ${ai.missing.map(m => `<li>${m} : <i>à compléter</i></li>`).join('')}
+                </ul>
+              </div>
+            ` : ''}
+
+            <div style="font-size:11px; color:#64748b; margin-top:14px; text-align:right">
+              Fiche préparatoire Alerte Village · Commune de Ndiédieng
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; flex-wrap:wrap; gap:8px">
+            <button class="btn btn-primary" onclick="saveDetails(${r.id})">
+              ✅ Valider la pré-déclaration (LGEC)
+            </button>
+            <button class="btn btn-gold" onclick="window.print()">
+              🖨️ Imprimer la pré-déclaration
+            </button>
+          </div>
+        ` : `
+          <h4 style="font-size:14px; font-weight:800; color:#064e3b">Fiche d'Intervention Technique</h4>
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; font-size:13px; margin:10px 0">
+            <b>Dossier :</b> #${r.id} · <b>Village :</b> ${r.village} · <b>Panne :</b> ${TYPE_NAMES[r.type]}<br>
+            <b>Analyse IA :</b> ${ai.resume}
+          </div>
+          <div style="display:flex; flex-direction:column; gap:10px">
+            <div>
+              <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:#64748b">Équipe technique ou prestataire assigné</label>
+              <input type="text" id="detNom" value="${d.nom || ''}" placeholder="Ex: Équipe Hydraulique Rurale - Ndiédieng" style="width:100%; padding:8px 12px; border-radius:6px; border:1px solid #cbd5e1; font-family:inherit; margin-top:3px">
+            </div>
+            <div>
+              <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:#64748b">Rapport d'intervention & Pièces à prévoir</label>
+              <textarea id="detNotes" rows="3" placeholder="Diagnostic : disjoncteur, pompe, câble..." style="width:100%; padding:8px 12px; border-radius:6px; border:1px solid #cbd5e1; font-family:inherit; margin-top:3px">${d.notes || ''}</textarea>
+            </div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:12px" onclick="saveDetails(${r.id})">💾 Enregistrer l'intervention</button>
+        `}
+      `;
+
+      modal.classList.add('open');
+    }
+
+    async function saveDetails(id) {
+      const nom = document.getElementById('detNom')?.value;
+      const extra1 = document.getElementById('detExtra1')?.value;
+      const extra2 = document.getElementById('detExtra2')?.value;
+      const notes = document.getElementById('detNotes')?.value;
+
+      await fetch(`/api/reports/${id}/details`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nom, extra1, extra2, notes })
+      });
+
+      loadData();
+      alert("Pré-déclaration validée et enregistrée pour transmission au logiciel LGEC !");
+      closeModal();
+    }
+
+    function closeModal() {
+      document.getElementById('detailModal').classList.remove('open');
+    }
+    function openCharteModal() { document.getElementById('charteModal').classList.add('open'); }
+    function closeCharteModal() { document.getElementById('charteModal').classList.remove('open'); }
+
+    // 6. DÉMARRAGE ET TEMPS RÉEL
+    initMap();
+    loadData();
+    new EventSource("/api/stream").onmessage = () => { loadData(); };
+  </script>
+  <!-- BOUTON FLOTTANT FIXE EN BAS À DROITE : CHAT IA DU MAIRE -->
+  <button id="floatingAIChatBtn" onclick="toggleAIDrawer(true)" style="position: fixed; bottom: 24px; right: 24px; z-index: 2200; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: white; border: none; border-radius: 30px; padding: 12px 20px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 8px 25px rgba(124, 58, 237, 0.45); display: flex; align-items: center; gap: 8px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10a9.96 9.96 0 0 1-5.55-1.67L2 22l1.67-4.45A9.96 9.96 0 0 1 2 12c0-5.52 4.48-10 10-10z"></path></svg>
+    <span>Discuter avec l'Assistant du Maire</span>
+    <span style="background: #10b981; width: 8px; height: 8px; border-radius: 50%; display: inline-block;"></span>
+  </button>
+
+</body>
+</html>

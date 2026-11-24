@@ -1,0 +1,12 @@
+ALERTE VILLAGE - mise en route
+1. Copie .env.example en .env et remplis-le (Twilio, ngrok, mot de passe du tableau de bord).
+2. npm install
+3. Dans un terminal : ngrok http 3000  -> colle l'URL https dans BASE_URL (.env)
+4. Dans un autre terminal : npm start
+5. Test appel : npm run call (Twilio t'appelle et joue le menu)
+6. Test SMS : dans la console Twilio, numero -> Messaging -> "A message comes in" = BASE_URL/sms (POST)
+   Envoie par ex. "3 Gandon" ou "3 1".
+7. Voix wolof : mets menu.mp3, village.mp3, parle.mp3, merci.mp3 dans public/audio/
+   (sans fichier, Twilio lit le francais)
+Si Twilio renvoie 403 : mets SKIP_SIGNATURE=1 dans .env le temps du test.
+Tableau de bord : http://localhost:3000 (identifiants DASH_USER / DASH_PASS)
