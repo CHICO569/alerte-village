@@ -104,8 +104,16 @@ const saveReports = () => {
   catch (e) { console.error("Erreur sauvegarde reports.json:", e); }
 };
 const push = () => clients.forEach(r => r.write("data: maj\n\n"));
-const addReport = o => {
-  const r = { id: nid++, t: Date.now(), st: "recu", audio: null, details: {}, ...o };
+const addReport = (o, { smsFollowupAllowed = false } = {}) => {
+  const r = {
+    id: nid++,
+    t: Date.now(),
+    st: "recu",
+    audio: null,
+    details: {},
+    ...o,
+    smsFollowupAllowed
+  };
   r.ai = classifyReportAI(r);
   reports.unshift(r);
   saveReports();
@@ -159,6 +167,38 @@ async function sendFollowupSMS(r) {
   }
 }
 
+async function sendStatusSMS(r) {
+  if (!r.smsFollowupAllowed) {
+    return { sent: false, retryable: false, error: "Envoi SMS indisponible pour ce dossier de démonstration ou ancien." };
+  }
+  if (!twilioClient || !TWILIO_NUMBER) {
+    return { sent: false, retryable: true, error: "Configuration SMS Twilio incomplète." };
+  }
+  if (!r.from || !/^\+[1-9]\d{7,14}$/.test(r.from)) {
+    return { sent: false, retryable: false, error: "Aucun numéro de téléphone valide n'est enregistré pour ce signalement." };
+  }
+
+  const messages = {
+    1: `Mairie de Ndiédieng : Félicitations pour la naissance. Votre dossier N°${r.id} à ${r.village} est pris en charge. L'officier d'état civil vérifiera les informations et vous recontactera pour la suite des démarches.`,
+    2: `Mairie de Ndiédieng : Nous vous présentons nos condoléances. Votre signalement de décès (dossier N°${r.id}, ${r.village}) est pris en charge. L'officier d'état civil vérifiera le dossier et vous recontactera pour la suite des démarches.`,
+    3: `Mairie de Ndiédieng : Votre signalement de panne de forage (dossier N°${r.id}, ${r.village}) est pris en charge par les services municipaux. La mairie vous tiendra informé de la suite.`,
+    4: `Mairie de Ndiédieng : Votre signalement de panne d'éclairage (dossier N°${r.id}, ${r.village}) est pris en charge par les services municipaux. La mairie vous tiendra informé de la suite.`
+  };
+  const text = messages[r.type];
+  if (!text) {
+    return { sent: false, retryable: false, error: "Type de signalement non reconnu." };
+  }
+
+  try {
+    const result = await twilioClient.messages.create({ to: r.from, from: TWILIO_NUMBER, body: text });
+    console.log(`[SMS PRISE EN CHARGE] Envoyé pour le dossier #${r.id} (SID: ${result.sid})`);
+    return { sent: true, retryable: false };
+  } catch (err) {
+    console.error(`[SMS PRISE EN CHARGE ERREUR] Dossier #${r.id}:`, err.message);
+    return { sent: false, retryable: true, error: err.message };
+  }
+}
+
 function say(node, key, fr) {
   if (fs.existsSync(path.join(__dirname, "public/audio", key + ".mp3"))) {
     node.play(BASE_URL + "/audio/" + key + ".mp3");
@@ -192,7 +232,10 @@ app.post("/voice/type", hook, (req, res) => {
 app.post("/voice/village", hook, (req, res) => {
   const type = +req.query.type, v = +req.body.Digits - 1, vr = new VR();
   if (!VILLAGES[v]) { vr.redirect("/voice/type?Digits=" + type); return xml(res, vr); }
-  const r = addReport({ type, village: VILLAGES[v], canal: "Appel", from: req.body.From });
+  const r = addReport(
+    { type, village: VILLAGES[v], canal: "Appel", from: req.body.From },
+    { smsFollowupAllowed: true }
+  );
   say(vr, "parle", "Après le bip, dites votre message, puis raccrochez ou appuyez sur dièse.");
   vr.record({
     maxLength: 45, playBeep: true, finishOnKey: "#",
@@ -229,7 +272,10 @@ app.post("/sms", hook, (req, res) => {
   if (!TYPES[t] || !VILLAGES[vi]) {
     vr.message("Format : TYPE VILLAGE. Ex: 3 Ndiédieng. Types: 1 Naissance, 2 Décès, 3 Panne forage, 4 Panne éclairage.");
   } else {
-    const r = addReport({ type: +t, village: VILLAGES[vi], canal: "SMS", from: req.body.From, texte: txt });
+    const r = addReport(
+      { type: +t, village: VILLAGES[vi], canal: "SMS", from: req.body.From, texte: txt },
+      { smsFollowupAllowed: true }
+    );
     vr.message(`Mairie de Ndiédieng: Votre signalement (${TYPES[t]} à ${VILLAGES[vi]}, N°${r.id}) est bien reçu.`);
   }
   xml(res, vr);
@@ -314,14 +360,32 @@ app.get("/api/stream", (req, res) => {
 });
 
 // Statut
-app.post("/api/reports/:id/status", (req, res) => {
+app.post("/api/reports/:id/status", async (req, res) => {
   const r = reports.find(x => x.id == req.params.id);
   if (!r) return res.sendStatus(404);
+  const shouldNotify = req.body.st === "cours" && (
+    r.st === "recu" || (r.st === "cours" && r.statusSmsRetryable)
+  );
   r.st = req.body.st;
   r.rp = r.rp ?? Date.now() - r.t;
   saveReports();
   push();
-  res.json(r);
+
+  let notification;
+  if (shouldNotify && !r.statusSmsSentAt) {
+    notification = await sendStatusSMS(r);
+    if (notification.sent) {
+      r.statusSmsSentAt = Date.now();
+      delete r.statusSmsError;
+      delete r.statusSmsRetryable;
+    } else {
+      r.statusSmsError = notification.error;
+      r.statusSmsRetryable = notification.retryable;
+    }
+    saveReports();
+    push();
+  }
+  res.json({ report: r, notification });
 });
 
 // Validation ou correction de la proposition de l'IA par un agent

@@ -8,5 +8,7 @@ ALERTE VILLAGE - mise en route
    Envoie par ex. "3 Gandon" ou "3 1".
 7. Voix wolof : mets menu.mp3, village.mp3, parle.mp3, merci.mp3 dans public/audio/
    (sans fichier, Twilio lit le francais)
+8. Prise en charge : le bouton envoie un SMS au declarant pour les nouveaux signalements recus
+   par appel ou SMS; les simulations et anciens dossiers ne declenchent pas de SMS.
 Si Twilio renvoie 403 : mets SKIP_SIGNATURE=1 dans .env le temps du test.
 Tableau de bord : http://localhost:3000 (identifiants DASH_USER / DASH_PASS)

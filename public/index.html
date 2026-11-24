@@ -1736,6 +1736,7 @@
 
             <div class="item-actions">
               ${r.st === 'recu' ? `<button class="btn btn-primary btn-sm" onclick="changeStatus(${r.id}, 'cours')">Prendre en charge</button>` : ''}
+              ${r.st === 'cours' && r.statusSmsRetryable ? `<button class="btn btn-primary btn-sm" onclick="changeStatus(${r.id}, 'cours')">Réessayer l'envoi du SMS</button>` : ''}
               ${r.st !== 'resolu' ? `<button class="btn btn-success btn-sm" onclick="changeStatus(${r.id}, 'resolu')">Marquer résolu</button>` : ''}
               
               <!-- BOUTON EXACT : PRÉPARER LA FICHE (À VALIDER) -->
@@ -1743,6 +1744,7 @@
                 ${(r.type === 1 || r.type === 2) ? '📋 Préparer la fiche (à valider)' : '📝 Fiche technique'}
               </button>
             </div>
+            ${r.statusSmsError ? `<small style="display:block; margin-top:6px; color:#b91c1c">SMS non envoyé : ${escapeHtml(r.statusSmsError)}</small>` : ''}
           </div>
         `;
       }).join('');
@@ -1756,12 +1758,23 @@
     }
 
     async function changeStatus(id, st) {
-      await fetch(`/api/reports/${id}/status`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ st })
-      });
-      loadData();
+      try {
+        const res = await fetch(`/api/reports/${id}/status`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ st })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.erreur || `Erreur HTTP ${res.status}`);
+        await loadData();
+        if (data.notification) {
+          alert(data.notification.sent
+            ? "Signalement pris en charge et SMS de confirmation envoyé."
+            : `Signalement pris en charge, mais SMS non envoyé : ${data.notification.error}`);
+        }
+      } catch (e) {
+        alert("Impossible de mettre à jour le statut : " + e.message);
+      }
     }
 
     // ACTIONS VALIDER / CORRIGER PROPOSITION IA
